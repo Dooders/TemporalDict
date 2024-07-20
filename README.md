@@ -121,7 +121,3 @@ state_by_id = temporal_object["state1"]
 ## License
 
 This project is licensed under the MIT License.
-
----
-
-Feel free to modify the class and methods to suit your specific requirements. Contributions and feedback are welcome!
