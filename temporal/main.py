@@ -1,11 +1,13 @@
+import uuid
 from collections import deque
+from typing import Any
 
 from temporal.util import LimitedDict
 
 
-class TemporalBuffer:
+class TemporalObject:
     """
-    A buffer designed for storing and managing states in a temporal sequence.
+    An custom object for storing and managing its states in a temporal sequence.
 
     This class utilizes a deque with a fixed maximum length (maxlen) to maintain
     a rolling buffer of states.
@@ -15,6 +17,8 @@ class TemporalBuffer:
 
     Parameters
     ----------
+    template : dict
+        The template for the object.
     temporal_depth : int
         The maximum number of states to store.
 
@@ -24,8 +28,6 @@ class TemporalBuffer:
         A deque with a maxlen.
     id_index : LimitedDict
         A dictionary with a limit on the number of items it can store.
-    current_index : int
-        The index of the current state.
 
     Methods
     -------
@@ -33,28 +35,22 @@ class TemporalBuffer:
         Appends a state to the buffer.
     update(object) -> None:
         Adds the object's state to the buffer.
-    get_last_n_states(n: int) -> list[dict]:
-        Returns the last n states from the buffer.
-    get_state_at_index(index: int) -> dict:
-        Returns the state at the given index.
-    move_forward() -> dict:
-        Moves the current index forward by 1 step.
-    move_backward() -> dict:
-        Moves the current index backward by 1 step.
+    get(key: str, relative_index: int = 0) -> dict:
+        Returns the value of the object with the given key and relative index.
     current() -> dict:
         Returns the current state.
     """
 
-    def __init__(self, temporal_depth: int = 100) -> None:
+    def __init__(self, template: dict = [], temporal_depth: int = 100) -> None:
         """
         Parameters
         ----------
         size : int
             The maximum number of states to store.
         """
+        self.template = template
         self.buffer = deque(maxlen=temporal_depth)
         self.id_index = LimitedDict(temporal_depth)
-        self.current_index = -1  # Initialize to -1 to indicate no states yet
 
     def add(self, id: str, state: dict) -> None:
         """
@@ -68,13 +64,9 @@ class TemporalBuffer:
             The state to add to the buffer.
         """
         self.id_index[id] = state
-        if len(self.buffer) == self.buffer.maxlen:
-            self.current_index = (self.current_index + 1) % self.buffer.maxlen
-        else:
-            self.current_index += 1
         self.buffer.append(state)
 
-    def update(self, object_state: dict) -> None:
+    def update(self, object_state: dict, temporal_id: str = None) -> str:
         """
         Adds the object's state to the buffer.
 
@@ -82,64 +74,41 @@ class TemporalBuffer:
         ----------
         object_state : dict
             The object's state to add to the buffer.
+        temporal_id : str, optional
+            The temporal ID of the object. If not provided, the object's temporal
+            ID is used.
         """
-        self.add(object_state.temporal_id, object_state)
+        if temporal_id is None:
+            temporal_id = str(uuid.uuid4())
+        self.add(temporal_id, object_state)
 
-    def get_last_n_states(self, n: int) -> list[dict]:
+        return temporal_id
+
+    def get(self, key: str, relative_index: int = 0, value: Any = None) -> dict:
         """
-        Returns the last n states from the buffer.
+        Returns the value of the object with the given key and relative index.
 
         Parameters
         ----------
-        n : int
-            The number of states to return.
-
-        Returns
-        -------
-        list[dict]
-            The last n states from the buffer.
+        key : str
+            The key of the object.
+        relative_index : int, optional
+            The relative index of the object.
+        value:
+            Optional. A value to return if the specified key does not exist.
+            Default value None
         """
-        return list(self.buffer)[-n:]
+        return self[relative_index][key] if key in self[relative_index] else value
 
-    def get_state_at_index(self, index: int) -> dict:
+    def _get_by_temporal_id(self, temporal_id: str) -> dict:
         """
-        Returns the state at the given index.
+        Returns the state of the object with the given temporal ID.
 
         Parameters
         ----------
-        index : int
-            The index of the state to return.
-
-        Returns
-        -------
-        dict
-            The state at the given index.
+        temporal_id : str
+            The temporal ID of the object.
         """
-        return self[index]
-
-    def move_forward(self) -> dict:
-        """
-        Moves the current index forward by 1 step.
-
-        Returns
-        -------
-        dict
-            The state at the new index.
-        """
-        raise NotImplementedError("Forward traversal not implemented")
-
-    def move_backward(self) -> dict:
-        """
-        Moves the current index backward by 1 step.
-
-        Returns
-        -------
-        dict
-            The state at the new index.
-        """
-        raise NotImplementedError("Backward traversal not implemented")
-
-    def _get_by_temporal_id(self, temporal_id):
         return self.id_index.get(temporal_id, None)
 
     def __len__(self) -> int:
@@ -189,6 +158,12 @@ class TemporalBuffer:
         """
         Returns the state at the given index.
 
+        If index is a string, it is assumed to be a temporal ID.
+
+        If index is a slice, it is assumed to be a range of relative indices.
+
+        If index is an integer, it is assumed to be a relative index.
+
         Parameters
         ----------
         index : int | slice | str
@@ -224,6 +199,12 @@ class TemporalBuffer:
             return self._get_by_temporal_id(index)
         else:
             raise TypeError("Invalid argument type")
+
+    def recent(self, n: int = 1) -> dict:
+        """
+        Returns the most recent n states.
+        """
+        return self[-n:]
 
     @property
     def current(self) -> dict:
