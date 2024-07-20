@@ -55,10 +55,57 @@ def test_temporal_object_overflow(temporal_object):
     assert temporal_object["id1"] is None  # state1 should be evicted
 
 
+def test_temporal_object_update(temporal_object):
+    id = temporal_object.update({"value": 100, "id": "id1"}, "id1")
+    assert temporal_object.current == {"value": 100, "id": "id1"}
+    assert id == "id1"
+
+
+def test_temporal_object_get(filled_temporal_object):
+    value = filled_temporal_object.get("value")
+    assert value == 40
+
+
+def test_temporal_object_get_indexed(filled_temporal_object):
+    value = filled_temporal_object.get("value", 1)
+    assert value == 30
+
+
+def test_temporal_object_get_default(filled_temporal_object):
+    value = filled_temporal_object.get("test", default=100)
+    assert value == 100
+
+
+def test_temporal_object_get_by_id(filled_temporal_object):
+    value = filled_temporal_object._get_by_temporal_id("id2")
+    assert value == {"value": 20}
+
+
+def test_len(filled_temporal_object):
+    assert len(filled_temporal_object) == 3
+
+
+def test_contains(filled_temporal_object):
+    assert "id2" in filled_temporal_object
+
+
+def test_iter(filled_temporal_object):
+    assert list(filled_temporal_object) == [{"value": 20}, {"value": 30}, {"value": 40}]
+
+
 def test_temporal_object_index_error(temporal_object):
     temporal_object.add("id1", {"value": 10})
     with pytest.raises(IndexError):
         temporal_object[1]  # Out of range index
+
+
+def test_recent_n(filled_temporal_object):
+    with pytest.raises(NotImplementedError):
+        filled_temporal_object.recent(2)
+
+
+def test_current(filled_temporal_object):
+    assert filled_temporal_object.current == {"value": 40}
 
 
 def test_temporal_object_invalid_argument_type(temporal_object):

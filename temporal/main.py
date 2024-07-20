@@ -17,8 +17,6 @@ class TemporalObject:
 
     Parameters
     ----------
-    template : dict
-        The template for the object.
     temporal_depth : int
         The maximum number of states to store.
 
@@ -41,14 +39,13 @@ class TemporalObject:
         Returns the current state.
     """
 
-    def __init__(self, template: dict = [], temporal_depth: int = 100) -> None:
+    def __init__(self, temporal_depth: int = 100) -> None:
         """
         Parameters
         ----------
         size : int
             The maximum number of states to store.
         """
-        self.template = template
         self.buffer = deque(maxlen=temporal_depth)
         self.id_index = LimitedDict(temporal_depth)
 
@@ -84,7 +81,7 @@ class TemporalObject:
 
         return temporal_id
 
-    def get(self, key: str, relative_index: int = 0, value: Any = None) -> dict:
+    def get(self, key: str, relative_index: int = 0, default: Any = None) -> dict:
         """
         Returns the value of the object with the given key and relative index.
 
@@ -94,11 +91,11 @@ class TemporalObject:
             The key of the object.
         relative_index : int, optional
             The relative index of the object.
-        value:
+        default:
             Optional. A value to return if the specified key does not exist.
             Default value None
         """
-        return self[relative_index][key] if key in self[relative_index] else value
+        return self[relative_index][key] if key in self[relative_index] else default
 
     def _get_by_temporal_id(self, temporal_id: str) -> dict:
         """
@@ -121,14 +118,6 @@ class TemporalObject:
             The number of states in the buffer.
         """
         return len(self.buffer)
-
-    def __call__(self, index: int | slice | str = 0) -> dict:
-        """
-        Returns the state at the given index.
-        """
-        if len(self.buffer) == 0:
-            raise IndexError("No states in the buffer")
-        return self.buffer[index]
 
     def __contains__(self, key: str) -> bool:
         """
