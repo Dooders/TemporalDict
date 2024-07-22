@@ -12,10 +12,6 @@ setup(
     url="https://pypi.org/project/temporal/",
     packages=find_packages(),
     install_requires=[
-        "ipycytoscape",
-        "hypothesis",
-        "pytest",
-        "pyperf",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
