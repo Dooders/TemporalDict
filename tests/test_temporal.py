@@ -14,10 +14,10 @@ def temporal_object():
 @pytest.fixture
 def filled_temporal_object():
     temporal_object = TemporalObject(temporal_depth=3)
-    temporal_object.add("id1", {"value": 10})
-    temporal_object.add("id2", {"value": 20})
-    temporal_object.add("id3", {"value": 30})
-    temporal_object.add("id4", {"value": 40})
+    temporal_object._add("id1", {"value": 10})
+    temporal_object._add("id2", {"value": 20})
+    temporal_object._add("id3", {"value": 30})
+    temporal_object._add("id4", {"value": 40})
     return temporal_object
 
 
@@ -38,18 +38,18 @@ def test_temporal_object_initialization(temporal_object):
 
 
 def test_temporal_object_add(temporal_object):
-    temporal_object.add("id1", {"value": 10})
-    temporal_object.add("id2", {"value": 20})
-    temporal_object.add("id3", {"value": 30})
+    temporal_object._add("id1", {"value": 10})
+    temporal_object._add("id2", {"value": 20})
+    temporal_object._add("id3", {"value": 30})
     assert len(temporal_object) == 3
     assert temporal_object.current == {"value": 30}
 
 
 def test_temporal_object_overflow(temporal_object):
-    temporal_object.add("id1", {"value": 10})
-    temporal_object.add("id2", {"value": 20})
-    temporal_object.add("id3", {"value": 30})
-    temporal_object.add("id4", {"value": 40})
+    temporal_object._add("id1", {"value": 10})
+    temporal_object._add("id2", {"value": 20})
+    temporal_object._add("id3", {"value": 30})
+    temporal_object._add("id4", {"value": 40})
     assert len(temporal_object) == 3
     assert temporal_object.current == {"value": 40}
     assert temporal_object["id1"] is None  # state1 should be evicted
@@ -94,7 +94,7 @@ def test_iter(filled_temporal_object):
 
 
 def test_temporal_object_index_error(temporal_object):
-    temporal_object.add("id1", {"value": 10})
+    temporal_object._add("id1", {"value": 10})
     with pytest.raises(IndexError):
         temporal_object[1]  # Out of range index
 

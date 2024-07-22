@@ -7,9 +7,9 @@ from temporal.util import LimitedDict
 
 class TemporalObject:
     """
-    An custom object for storing and managing its states in a temporal sequence.
+    A custom python object for storing and managing states in a temporal sequence.
 
-    This class utilizes a deque with a fixed maximum length (maxlen) to maintain
+    This class utilizes a deque with a fixed temporal length (maxlen) to maintain
     a rolling buffer of states.
 
     Each state can be indexed by an integer, a string ID, or a slice. The class
@@ -29,8 +29,6 @@ class TemporalObject:
 
     Methods
     -------
-    add(id: str, state: dict) -> None:
-        Appends a state to the buffer.
     update(object) -> None:
         Adds the object's state to the buffer.
     get(key: str, relative_index: int = 0) -> dict:
@@ -49,7 +47,7 @@ class TemporalObject:
         self.buffer = deque(maxlen=temporal_depth)
         self.id_index = LimitedDict(temporal_depth)
 
-    def add(self, id: str, state: dict) -> None:
+    def _add(self, id: str, state: dict) -> None:
         """
         Appends a state to the buffer.
 
@@ -77,7 +75,7 @@ class TemporalObject:
         """
         if temporal_id is None:
             temporal_id = str(uuid.uuid4())
-        self.add(temporal_id, object_state)
+        self._add(temporal_id, object_state)
 
         return temporal_id
 
