@@ -26,11 +26,11 @@ def test_temporal_object_indexing(filled_temporal_object):
     assert filled_temporal_object[-1] == {"value": 30}
     assert filled_temporal_object[-2] == {"value": 20}
     assert filled_temporal_object["id2"] == {"value": 20}
-    assert id(filled_temporal_object[-2]) == id(filled_temporal_object.id_index["id2"])
-    assert filled_temporal_object.buffer == deque(
+    assert id(filled_temporal_object[-2]) == id(filled_temporal_object._id_index["id2"])
+    assert filled_temporal_object._buffer == deque(
         [{"value": 20}, {"value": 30}, {"value": 40}], maxlen=3
     )
-    assert list(filled_temporal_object.id_index.keys()) == ["id2", "id3", "id4"]
+    assert list(filled_temporal_object._id_index.keys()) == ["id2", "id3", "id4"]
 
 
 def test_temporal_object_initialization(temporal_object):
