@@ -20,3 +20,12 @@ def test_limited_dict_update():
     assert len(limited_dict) == 2
     assert limited_dict["a"] == 3
     assert "b" in limited_dict
+
+def test_limited_dict_none():
+    limited_dict = LimitedDict()
+    limited_dict["a"] = 1
+    limited_dict["b"] = 2
+    limited_dict["a"] = 3
+    assert len(limited_dict) == 2
+    assert limited_dict["a"] == 3
+    assert "b" in limited_dict

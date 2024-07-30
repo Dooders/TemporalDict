@@ -14,7 +14,7 @@ class LimitedDict(OrderedDict):
         The maximum number of items to store.
     """
 
-    def __init__(self, limit: int, *args, **kwargs) -> None:
+    def __init__(self, limit: int = None, *args, **kwargs) -> None:
         self.limit = limit
         super().__init__(*args, **kwargs)
 
@@ -24,7 +24,7 @@ class LimitedDict(OrderedDict):
         """
         if key in self:
             del self[key]
-        elif len(self) >= self.limit:
+        elif self.limit is not None and len(self) >= self.limit:
             self.popitem(last=False)
         super().__setitem__(key, value)
 
