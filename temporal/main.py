@@ -168,12 +168,10 @@ class TemporalObject:
 
         # If index is a slice, return the states in the given range
         elif isinstance(index, slice):
-            raise NotImplementedError("Haven't implemented slicing yet")
-            #! Highlighted out until implemented
-            # # Convert the slice to a list of indices
-            # start, stop, step = index.indices(len(self.buffer))
-            # # Return the states at the given indices
-            # return [self[i] for i in range(start, stop, step)]
+            # Convert the slice to a list of indices
+            start, stop, step = index.indices(len(self._buffer))
+            # Return the states at the given indices
+            return [self._buffer[i] for i in range(start, stop, step)]
 
         elif isinstance(index, str):
             return self._get_by_temporal_id(index)
