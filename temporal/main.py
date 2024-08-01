@@ -20,32 +20,25 @@ class TemporalObject:
     temporal_depth : int
         The maximum number of states to store.
 
-    Attributes
-    ----------
-    buffer : deque
-        A deque with a maxlen.
-    id_index : LimitedDict
-        A dictionary with a limit on the number of items it can store.
-
     Methods
     -------
-    update(object) -> None:
+    update(object_state: dict, temporal_id: str = None) -> str:
         Adds the object's state to the buffer.
     get(key: str, relative_index: int = 0) -> dict:
         Returns the value of the object with the given key and relative index.
     current() -> dict:
-        Returns the current state.
+        Returns the most recent state.
     """
 
-    def __init__(self, temporal_depth: int = 100) -> None:
+    def __init__(self, temporal_depth: int = None) -> None:
         """
         Parameters
         ----------
-        size : int
-            The maximum number of states to store.
+        temporal_depth : int, optional
+            The maximum number of states to store. If None, the buffer is unlimited.
         """
-        self.buffer = deque(maxlen=temporal_depth)
-        self.id_index = LimitedDict(temporal_depth)
+        self._buffer = deque(maxlen=temporal_depth)
+        self._id_index = LimitedDict(temporal_depth)
 
     def _add(self, id: str, state: dict) -> None:
         """
@@ -58,8 +51,8 @@ class TemporalObject:
         state : dict
             The state to add to the buffer.
         """
-        self.id_index[id] = state
-        self.buffer.append(state)
+        self._id_index[id] = state
+        self._buffer.append(state)
 
     def update(self, object_state: dict, temporal_id: str = None) -> str:
         """
@@ -104,7 +97,7 @@ class TemporalObject:
         temporal_id : str
             The temporal ID of the object.
         """
-        return self.id_index.get(temporal_id, None)
+        return self._id_index.get(temporal_id, None)
 
     def __len__(self) -> int:
         """
@@ -115,31 +108,31 @@ class TemporalObject:
         int
             The number of states in the buffer.
         """
-        return len(self.buffer)
+        return len(self._buffer)
 
     def __contains__(self, key: str) -> bool:
         """
         Returns whether the temporal ID is in the buffer.
         """
-        return key in self.id_index
+        return key in self._id_index
 
     def __setitem__(self, key: str, value: dict) -> None:
         """
         Sets the value of the key.
         """
-        self.id_index[key] = value
+        self._id_index[key] = value
 
     def __delitem__(self, key: str) -> None:
         """
         Deletes the value of the key.
         """
-        del self.id_index[key]
+        del self._id_index[key]
 
     def __iter__(self) -> dict:
         """
         Returns an iterator over the states in the buffer.
         """
-        return iter(self.buffer)
+        return iter(self._buffer)
 
     def __getitem__(self, index: int | slice | str) -> dict:
         """
@@ -168,19 +161,17 @@ class TemporalObject:
             if index < 0:
                 index = abs(index)
             # Check if the index is within the valid range
-            if index < 0 or index >= len(self.buffer):
+            if index < 0 or index >= len(self._buffer):
                 raise IndexError("Index out of range")
             # Return the state at the given index
-            return self.buffer[-1 - index]
+            return self._buffer[-1 - index]
 
         # If index is a slice, return the states in the given range
         elif isinstance(index, slice):
-            raise NotImplementedError("Haven't implemented slicing yet")
-            #! Highlighted out until implemented
-            # # Convert the slice to a list of indices
-            # start, stop, step = index.indices(len(self.buffer))
-            # # Return the states at the given indices
-            # return [self[i] for i in range(start, stop, step)]
+            # Convert the slice to a list of indices
+            start, stop, step = index.indices(len(self._buffer))
+            # Return the states at the given indices
+            return [self._buffer[i] for i in range(start, stop, step)]
 
         elif isinstance(index, str):
             return self._get_by_temporal_id(index)
@@ -203,4 +194,4 @@ class TemporalObject:
         dict
             The current state.
         """
-        return self.buffer[-1]
+        return self._buffer[-1]
